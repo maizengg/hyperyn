@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperyn AI | Intelligent Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- General Setup & Resets --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Google Sans', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e8eaed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* --- Main App Container --- */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            height: calc(100vh - 32px);
+            /* Fill viewport height */
+            display: flex;
+            flex-direction: column;
+            background: rgba(32, 33, 36, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* --- Main Header --- */
+        header {
+            padding: 24px 32px 16px;
+            text-align: center;
+            background: rgba(32, 33, 36, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            /* Prevent header from shrinking */
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ce78ff 0%, #7b61ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            color: #9aa0a6;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .tagline a {
+            color: #bd93f9;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .tagline a:hover {
+            color: #ce78ff;
+        }
+
+        /* --- Main Content Area (Sidebar + Chat) --- */
+        .main-content {
+            display: flex;
+            flex: 1;
+            /* Allows this section to grow and fill available space */
+            overflow: hidden;
+            /* KEY: Prevents children from overflowing the container */
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background: rgba(32, 33, 36, 0.6);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .new-chat-btn {
+            background: linear-gradient(135deg, #ce78ff 0%, #7b61ff 100%);
+            border: none;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            box-shadow: 0 4px 15px rgba(123, 97, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .history-title {
+            font-size: 1rem;
+            color: #9aa0a6;
+            margin-bottom: 16px;
+            padding-left: 8px;
+        }
+
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #e8eaed;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .history-item i {
+            color: #9aa0a6;
+            font-size: 1.1rem;
+        }
+
+        /* --- Chat Container --- */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Ensure content stays within this container */
+        }
+
+        .chat-header {
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(32, 33, 36, 0.8);
+            flex-shrink: 0;
+            /* Prevent shrinking */
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: #9aa0a6;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #0fce5e;
+            animation: pulse 2s infinite;
+        }
+
+        .chat-options button {
+            background: transparent;
+            border: none;
+            color: #9aa0a6;
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s, background-color 0.3s;
+        }
+
+        .chat-options button:hover {
+            color: #e8eaed;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* --- Chat Messages (Scrolling Area) --- */
+        .chat-messages {
+            flex: 1;
+            /* KEY: This makes the message area fill the space */
+            overflow-y: auto;
+            /* KEY: This makes ONLY the message area scrollable */
+            padding: 24px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 18px 24px;
+            border-radius: 24px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+            animation: messageAppear 0.3s ease;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: rgba(123, 97, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(123, 97, 255, 0.3);
+            border-bottom-right-radius: 8px;
+        }
+
+        /* NEW: Styling for AI messages */
+        .ai-message {
+            align-self: flex-start;
+            background: rgba(43, 46, 56, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 8px;
+        }
+
+        .message-timestamp {
+            font-size: 0.75rem;
+            color: #9aa0a6;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        /* --- Chat Input Area --- */
+        .chat-input-container {
+            padding: 24px 32px;
+            background: rgba(32, 33, 36, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            /* Prevent from shrinking */
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 6px 6px 6px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: rgba(123, 97, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.2);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #e8eaed;
+            font-size: 1.05rem;
+            padding: 14px 0;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: #9aa0a6;
+        }
+
+        .action-button,
+        .send-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .action-button {
+            background: transparent;
+            color: #9aa0a6;
+            font-size: 1.2rem;
+        }
+
+        .action-button:hover {
+            color: #e8eaed;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #ce78ff 0%, #7b61ff 100%);
+            color: white;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(123, 97, 255, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 20px 24px;
+            background: rgba(43, 46, 56, 0.8);
+            border-radius: 24px;
+            align-self: flex-start;
+            border-bottom-left-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background: #9aa0a6;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: typing 1.5s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #9aa0a6;
+            font-size: 0.9rem;
+            background: rgba(32, 33, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+
+        footer a {
+            color: #9aa0a6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- Custom Scrollbar --- */
+        .chat-messages::-webkit-scrollbar,
+        .chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track,
+        .chat-history::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb,
+        .chat-history::-webkit-scrollbar-thumb {
+            background: rgba(123, 97, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: rgba(123, 97, 255, 0.7);
+        }
+
+        /* --- Animations --- */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes messageAppear {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes typing {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                padding: 16px;
+            }
+
+            /* KEY: Make history scrollable on smaller screens */
+            .chat-history {
+                max-height: 180px;
+                overflow-y: auto;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+
+            .chat-header,
+            .chat-input-container,
+            .chat-messages {
+                padding: 16px 20px;
+            }
+
+            .message {
+                max-width: 95%;
+                padding: 16px 20px;
+            }
+
+            header {
+                padding: 20px 24px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Hyperyn AI</div>
+            <p class="tagline">Your intelligent assistant developed by <a href="https://maizengg.github.io"
+                    target="_blank" rel="noopener noreferrer">maizengg</a></p>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <button class="new-chat-btn">
+                    <i class="fas fa-plus"></i>
+                    New chat
+                </button>
+                <h3 class="history-title">Recent chats</h3>
+                <div class="chat-history">
+                    <div class="history-item">
+                        <i class="fas fa-message"></i>
+                        <span></span>
+                    </div>
+                    <div class="history-item">
+                        <i class="fas fa-message"></i>
+                        <span></span>
+                    </div>
+                    <div class="history-item">
+                        <i class="fas fa-message"></i>
+                        <span></span>
+                    </div>
+                    <div class="history-item">
+                        <i class="fas fa-message"></i>
+                        <span></span>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="chat-container">
+                <div class="chat-header">
+                    <div class="status">
+                        <div class="status-dot"></div>
+                        <span>Hyperyn AI is ready to help</span>
+                    </div>
+                    <div class="chat-options">
+                    
+                        <button title="Chat history" id="history"><i class="fas fa-history"></i></button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message ai-message">
+                        Hello! I'm Hyperyn AI, your intelligent assistant. I can help answer questions, provide
+                        information, and assist with various tasks. How can I help you today?
+                        <div class="message-timestamp">Just now</div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <input type="text" class="chat-input" id="user-input" placeholder="Message Hyperyn AI...">
+                        <div class="action-buttons">
+                        <button class="send-button" id="send-button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const clearChatButton = document.getElementById('clear-chat');
+            const typingIndicator = document.getElementById('typing-indicator');
+
+            // API configuration
+            const API_KEY = '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';
+            const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+            // Predefined questions and answers
+            const predefinedQA = {
+                "what is your name": "I'm Hyperyn AI, your intelligent assistant!",
+                "who created you?": "I was created by a talented developer MAIZEN GG, I will assist with answering questions, providing information, and helping with various tasks. Let me know how I can assist you!",
+                "what can you do": "I can answer questions, provide information, help with problems, and much more!",
+                "hello": "Hello! How can I assist you today?",
+                "hi": "Hi there! What can I help you with?",
+                "thanks": "You're welcome! Is there anything else you'd like to know?",
+                "thank you": "You're welcome! I'm here to help whenever you need me."
+            };
+
+            // Conversation history
+            let conversationHistory = [
+                { role: "system", content: "You are Hyperyn AI, a helpful and friendly assistant. Provide clear and concise responses." }
+            ];
+
+            // Function to add a message to the chat
+            function addMessage(text, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = isUser ? 'message user-message' : 'message ai-message';
+                messageDiv.innerHTML = text + `<div class="message-timestamp">${getCurrentTime()}</div>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Function to get current time for timestamp
+            function getCurrentTime() {
+                const now = new Date();
+                return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            }
+
+            // Function to call OpenRouter API
+            async function getAIResponse(userMessage) {
+                // Show typing indicator
+                typingIndicator.style.display = 'block';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Check if this is a predefined question
+                const lowerCaseMessage = userMessage.toLowerCase().trim();
+                if (predefinedQA[lowerCaseMessage]) {
+                    // Simulate delay for more natural interaction
+                    setTimeout(() => {
+                        typingIndicator.style.display = 'none';
+                        addMessage(predefinedQA[lowerCaseMessage], false);
+                    }, 1000);
+                    return;
+                }
+
+                // Add user message to conversation history
+                conversationHistory.push({ role: "user", content: userMessage });
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: "deepseek/deepseek-chat",
+                            messages: conversationHistory,
+                            temperature: 0.7,
+                            max_tokens: 1000
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const aiResponse = data.choices[0].message.content;
+
+                    // Add AI response to conversation history
+                    conversationHistory.push({ role: "assistant", content: aiResponse });
+
+                    // Hide typing indicator and show response
+                    typingIndicator.style.display = 'none';
+                    addMessage(aiResponse, false);
+                } catch (error) {
+                    // Hide typing indicator and show error
+                    typingIndicator.style.display = 'none';
+                    addMessage("Sorry, I'm having trouble connecting to the API right now. Please try again later.", false);
+                    console.error("API Error:", error);
+                }
+            }
+
+            // Event listener for send button
+            sendButton.addEventListener('click', () => {
+                const message = userInput.value.trim();
+                if (message) {
+                    addMessage(message, true);
+                    userInput.value = '';
+                    getAIResponse(message);
+                }
+            });
+
+            // Event listener for Enter key
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendButton.click();
+                }
+            });
+
+            // Event listener for clear chat button
+            clearChatButton.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the conversation?')) {
+                    // Clear the chat UI
+                    while (chatMessages.children.length > 1) {
+                        chatMessages.removeChild(chatMessages.lastChild);
+                    }
+                    // Reset conversation history (keep system message)
+                    conversationHistory = [
+                        { role: "system", content: "You are Hyperyn AI, a helpful and friendly assistant. Provide clear and concise responses." }
+                    ];
+                    // Add a new greeting
+                    addMessage("welcome back! How can I help you today?", false);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
